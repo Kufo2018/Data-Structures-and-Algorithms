@@ -1,4 +1,5 @@
 ##Data Structures and Algorithms 
+
 ###Project 1
 - Search Algorithms 
     - Linear Search
