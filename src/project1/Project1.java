@@ -17,7 +17,7 @@ public class Project1 {
     private String inputFile = "";
     private String outputFile = "";
     private PrintWriter printWriter;
-    Timer timer = new Timer();
+    private Timer timer = new Timer();
 
     /**
      * Creates an object of this class using command line arguments
@@ -25,11 +25,15 @@ public class Project1 {
      * @param args the String array containing the input and output file names
      */
     public Project1(String[] args) {
-        try {
+
+        if (args.length == 0) {
+            print("No command line arguments found");
+        } else if (args.length == 1) {
+            this.inputFile = args[0];
+            this.outputFile = "output.txt";
+        } else if (args.length == 2) {
             this.inputFile = args[0];
             this.outputFile = args[1];
-        } catch (Exception exception) {
-            print("Error accessing command line argument(s)");
         }
     }
 
@@ -40,12 +44,8 @@ public class Project1 {
      * @param outputFile the file to be written to
      */
     public Project1(String inputFile, String outputFile) {
-        try {
-            this.inputFile = inputFile;
-            this.outputFile = outputFile;
-        } catch (Exception exception) {
-            print("Error with input or output string");
-        }
+        this.inputFile = inputFile;
+        this.outputFile = outputFile;
     }
 
     /**
@@ -66,12 +66,10 @@ public class Project1 {
 
             initializePrintWriter();
 
-        } catch (FileNotFoundException fileNotFoundException) {
-            print("Error! Input or output file does not exist");
-        } catch (IOException ioException) {
-            print("Error! IO exception occurred while reading file");
-        } catch (NumberFormatException numberFormatException) {
-            print("Error! Input file contains invalid data");
+        } catch (Exception exception) {
+            print("Error!");
+            print("Please ensure input file exists and is formatted correctly");
+            System.exit(1);
         }
     }
 
@@ -156,7 +154,6 @@ public class Project1 {
      */
     private void initializePrintWriter() {
         try {
-            if (outputFile.isEmpty()) outputFile = "output.txt";
             FileWriter fileWriter = new FileWriter(outputFile);
             printWriter = new PrintWriter(fileWriter);
         } catch (IOException ioException) {
