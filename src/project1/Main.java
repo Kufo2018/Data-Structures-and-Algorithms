@@ -15,7 +15,8 @@ public class Main {
         Project1 project1;
         int response;
 
-        System.out.println("Enter 1 to use command line arguments or 2 to manually input file names:");
+        System.out.println("Enter 1 to use command line arguments, 2 to manually input file names " +
+                "or 3 to have the program generate an input and output file for you :");
         Scanner scanner = new Scanner(System.in);
         try {
             response = scanner.nextInt();
@@ -44,13 +45,16 @@ public class Main {
                     project1 = new Project1(fileNames[0], fileNames[1]);
                 }
             }
-        } else {
+        } else if (response == 3) project1 = new Project1();
+        else {
             System.out.println("Invalid response");
             return;
         }
 
+        System.out.println("Running algorithms...");
         project1.initializeProgram();
         project1.runSearchAlgorithms();
         scanner.close();
+        System.out.println("Finished running algorithms");
     }
 }

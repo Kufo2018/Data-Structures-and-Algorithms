@@ -9,6 +9,7 @@ package project1;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 public class Project1 {
 
@@ -17,7 +18,7 @@ public class Project1 {
     private String inputFile = "";
     private String outputFile = "";
     private PrintWriter printWriter;
-    private Timer timer = new Timer();
+    private final Timer timer = new Timer();
 
     /**
      * Creates an object of this class using command line arguments
@@ -46,6 +47,15 @@ public class Project1 {
     public Project1(String inputFile, String outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
+    }
+
+    /**
+     * Creates ab object of this class and generates a text file
+     */
+    public Project1() {
+        generateTextFile();
+        this.inputFile = "genInputFile.txt";
+        this.outputFile = "output.txt";
     }
 
     /**
@@ -177,5 +187,30 @@ public class Project1 {
         private long getElapsedTime() {
             return System.currentTimeMillis() - startTime;
         }
+    }
+
+    /**
+     * Generates an input.txt file with 50000000 elements
+     */
+    private void generateTextFile() {
+        print("Generating text file with 50,000,000 elements...");
+        outputFile = "genInputFile.txt";
+        int[] elementType = {50000000, 10}; // Toggles data and query sizes
+        initializePrintWriter();
+
+        printWriter.print(elementType[0] + " " + elementType[1] + "\n");
+
+        for (int item : elementType) {
+            while (item > 0) {
+                var randomNumber = new Random().nextInt(50000000); // Toggles max integer size of elements
+                printWriter.println(randomNumber);
+                item--;
+            }
+        }
+
+        printWriter.close();
+        printWriter = null;
+        outputFile = "";
+        print("Generation done!");
     }
 }
