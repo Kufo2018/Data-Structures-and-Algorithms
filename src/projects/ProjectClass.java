@@ -4,14 +4,13 @@ Date: 11th March, 2021
 Purpose: Implement sequential and binary search algorithms and test using standard input
  */
 
-package project1;
+package projects;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
-public class Project1 {
+public class ProjectClass {
 
     private final ArrayList<Integer> dataArray = new ArrayList<>();
     private final ArrayList<Integer> queryArray = new ArrayList<>();
@@ -25,7 +24,7 @@ public class Project1 {
      *
      * @param args the String array containing the input and output file names
      */
-    public Project1(String[] args) {
+    public ProjectClass(String[] args) {
 
         if (args.length == 0) {
             print("No command line arguments found");
@@ -44,7 +43,7 @@ public class Project1 {
      * @param inputFile  the file to be processed
      * @param outputFile the file to be written to
      */
-    public Project1(String inputFile, String outputFile) {
+    public ProjectClass(String inputFile, String outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
     }
@@ -52,7 +51,7 @@ public class Project1 {
     /**
      * Creates ab object of this class and generates a text file
      */
-    public Project1() {
+    public ProjectClass() {
         generateTextFile();
         this.inputFile = "genInputFile.txt";
         this.outputFile = "output.txt";
@@ -87,8 +86,16 @@ public class Project1 {
      * Runs the search algorithms implemented in this class
      */
     public void runSearchAlgorithms() {
+
         var isQueryItemFound = false;
 
+        // Sorts data and records prep time
+        print("Sorting data...");
+        timer.startTimer();
+        sort(dataArray, 0, dataArray.size() - 1);
+        printWriter.println("Prep time: " + (timer.getElapsedTime()) + "ms ");
+
+        print("Running linear and binary-search algorithms...");
         if (printWriter != null) {
             for (int queryItem : queryArray) {
 
@@ -107,6 +114,7 @@ public class Project1 {
         } else {
             print("Error! PrintWriter object not instantiated!");
         }
+        print("Finished running algorithms!");
     }
 
     /**
@@ -133,7 +141,7 @@ public class Project1 {
      * @return a boolean value that indicates search status
      */
     private boolean binarySearch(int query) {
-        Collections.sort(dataArray);
+        // Collections.sort(dataArray)
 
         int start = 0;
         int end = dataArray.size() - 1;
@@ -211,6 +219,77 @@ public class Project1 {
         printWriter.close();
         printWriter = null;
         outputFile = "";
-        print("Generation done!");
+    }
+
+    /**
+     * Implements the sort portion of the merge-sort algorithm
+     * Calls the merge function after sorting
+     *
+     * @param array      is the array that needs sorting
+     * @param firstIndex is the index of the first element in the array
+     * @param lastIndex  is the index of the last element in the array
+     */
+    public void sort(ArrayList<Integer> array, int firstIndex, int lastIndex) {
+        if (firstIndex < lastIndex) {
+            int middleIndex = firstIndex + ((lastIndex - firstIndex) / 2);
+
+            sort(array, firstIndex, middleIndex);
+            sort(array, middleIndex + 1, lastIndex);
+
+            merge(array, firstIndex, middleIndex, lastIndex);
+        }
+    }
+
+    /**
+     * Implements the merge portion of the merge-sort algorithm
+     *
+     * @param array       is the array that needs sorting
+     * @param firstIndex  is the index of the first element in the array
+     * @param middleIndex is the index of the middle element in the array
+     * @param lastIndex   is the index of the last element in the array
+     */
+    private void merge(ArrayList<Integer> array, int firstIndex, int middleIndex, int lastIndex) {
+
+        // Determines the size of the subarrays to be merged
+        int size1 = middleIndex - firstIndex + 1;
+        int size2 = lastIndex - middleIndex;
+
+        // Creates temporary arrays
+        int[] tempArray1 = new int[size1];
+        int[] tempArray2 = new int[size2];
+
+        // Populates the temp arrays
+        for (int i = 0; i < size1; ++i) tempArray1[i] = array.get(firstIndex + i);
+        for (int j = 0; j < size2; ++j) tempArray2[j] = array.get(middleIndex + 1 + j);
+
+        // Merges the temporary arrays
+        int index1 = 0;
+        int index2 = 0;
+        int mergedArrayIndex = firstIndex;
+
+        while (index1 < size1 && index2 < size2) {
+            if (tempArray1[index1] <= tempArray2[index2]) {
+                array.set(mergedArrayIndex, tempArray1[index1]);
+                index1++;
+            } else {
+                array.set(mergedArrayIndex, tempArray2[index2]);
+                index2++;
+            }
+            mergedArrayIndex++;
+        }
+
+        // Copy any elements left in tempArray1
+        while (index1 < size1) {
+            array.set(mergedArrayIndex, tempArray1[index1]);
+            index1++;
+            mergedArrayIndex++;
+        }
+
+        // Copy any elements left in tempArray2
+        while (index2 < size2) {
+            array.set(mergedArrayIndex, tempArray2[index2]);
+            index2++;
+            mergedArrayIndex++;
+        }
     }
 }
