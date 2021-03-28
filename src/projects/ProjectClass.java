@@ -8,6 +8,7 @@ package projects;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class ProjectClass {
@@ -19,6 +20,9 @@ public class ProjectClass {
     private PrintWriter printWriter;
     private final Timer timer = new Timer();
 
+    private final BinaryTree binTreeDataArray = new BinaryTree();
+    private boolean binDataPrep = false;
+
     /**
      * Creates an object of this class using command line arguments
      *
@@ -26,14 +30,18 @@ public class ProjectClass {
      */
     public ProjectClass(String[] args) {
 
-        if (args.length == 0) {
-            print("No command line arguments found");
-        } else if (args.length == 1) {
-            this.inputFile = args[0];
-            this.outputFile = "output.txt";
-        } else if (args.length == 2) {
-            this.inputFile = args[0];
-            this.outputFile = args[1];
+        switch (args.length) {
+            case 0:
+                print("No command line arguments found");
+                break;
+            case 1:
+                this.inputFile = args[0];
+                this.outputFile = "output.txt";
+                break;
+            case 2:
+                this.inputFile = args[0];
+                this.outputFile = args[1];
+                break;
         }
     }
 
@@ -60,24 +68,37 @@ public class ProjectClass {
     /**
      * Populates the dataArray and queryArray
      */
-    public void initializeProgram() {
+    public void initializeProgram(boolean binDataPrep) {
+
         try {
             BufferedReader input = new BufferedReader(new FileReader(inputFile));
             var line = input.readLine();
             var arraySize = Integer.parseInt(line.split(" ")[0]);
             var querySize = Integer.parseInt(line.split(" ")[1]);
 
+            initializePrintWriter();
+
             // Populates data array
-            for (int i = 0; i < arraySize; i++) dataArray.add(Integer.parseInt(input.readLine()));
+            if (binDataPrep) {
+                this.binDataPrep = true;
+                timer.startTimer();
+                for (int i = 0; i < arraySize; i++) {
+                    int value = Integer.parseInt(input.readLine());
+                    binTreeDataArray.addNode(value);
+                }
+                printWriter.println("Prep time: " + (timer.getElapsedTime()) + "ms ");
+            } else for (int i = 0; i < arraySize; i++) dataArray.add(Integer.parseInt(input.readLine()));
 
             // Populates query array
             for (int i = 0; i < querySize; i++) queryArray.add(Integer.parseInt(input.readLine()));
 
-            initializePrintWriter();
+            input.close();
 
         } catch (Exception exception) {
             print("Error!");
-            print("Please ensure input file exists and is formatted correctly");
+            print("Please ensure input file exists and is formatted correctly " +
+                    exception + " " +
+                    Arrays.toString(exception.getStackTrace()));
             System.exit(1);
         }
     }
@@ -86,35 +107,42 @@ public class ProjectClass {
      * Runs the search algorithms implemented in this class
      */
     public void runSearchAlgorithms() {
-
         var isQueryItemFound = false;
-
-        // Sorts data and records prep time
-        print("Sorting data...");
-        timer.startTimer();
-        sort(dataArray, 0, dataArray.size() - 1);
-        printWriter.println("Prep time: " + (timer.getElapsedTime()) + "ms ");
-
-        print("Running linear and binary-search algorithms...");
         if (printWriter != null) {
-            for (int queryItem : queryArray) {
-
-                // Runs a sequential search
+            if (this.binDataPrep) {
+                for (int queryItem : queryArray) {
+                    timer.startTimer();
+                    isQueryItemFound = binTreeDataArray.findNode(queryItem);
+                    printWriter.println(isQueryItemFound + ":" + (timer.getElapsedTime()) + "ms ");
+                }
+            } else {
+                // Sorts data and records prep time
+                print("Sorting data...");
                 timer.startTimer();
-                isQueryItemFound = sequentialSearch(queryItem);
-                printWriter.print(isQueryItemFound + ":" + (timer.getElapsedTime()) + "ms ");
+                sort(dataArray, 0, dataArray.size() - 1);
+                printWriter.println("Prep time: " + (timer.getElapsedTime()) + "ms ");
 
-                // Runs a binary search
-                isQueryItemFound = binarySearch(queryItem);
-                printWriter.print(isQueryItemFound + ":" + (timer.getElapsedTime()) + "ms " + queryItem);
+                print("Running linear and binary-search algorithms...");
 
-                printWriter.println();
+                for (int queryItem : queryArray) {
+
+                    // Runs a sequential search
+                    timer.startTimer();
+                    isQueryItemFound = sequentialSearch(queryItem);
+                    printWriter.print(isQueryItemFound + ":" + (timer.getElapsedTime()) + "ms ");
+
+                    // Runs a binary search
+                    timer.startTimer();
+                    isQueryItemFound = binarySearch(queryItem);
+                    printWriter.print(isQueryItemFound + ":" + (timer.getElapsedTime()) + "ms " + queryItem);
+                    printWriter.println();
+                }
+                print("Finished running search algorithms!");
             }
             printWriter.close();
         } else {
             print("Error! PrintWriter object not instantiated!");
         }
-        print("Finished running algorithms!");
     }
 
     /**
@@ -141,12 +169,9 @@ public class ProjectClass {
      * @return a boolean value that indicates search status
      */
     private boolean binarySearch(int query) {
-        // Collections.sort(dataArray)
-
         int start = 0;
         int end = dataArray.size() - 1;
 
-        timer.startTimer();
         if (query > dataArray.get(dataArray.size() - 1)) return false;
         while (start <= end) {
             int mid = (start + end) >>> 1;
@@ -180,37 +205,19 @@ public class ProjectClass {
     }
 
     /**
-     * Inner class to abstract timer implementation
-     */
-    private static class Timer {
-        private long startTime;
-
-        public Timer() {
-        }
-
-        private void startTimer() {
-            startTime = System.currentTimeMillis();
-        }
-
-        private long getElapsedTime() {
-            return System.currentTimeMillis() - startTime;
-        }
-    }
-
-    /**
      * Generates an input.txt file with 50000000 elements
      */
     private void generateTextFile() {
-        print("Generating text file with 50,000,000 elements...");
         outputFile = "genInputFile.txt";
-        int[] elementType = {50000000, 10}; // Toggles data and query sizes
+        int[] elementType = {1000000, 10}; // Toggles data and query sizes
         initializePrintWriter();
+        print("Generating text file with " + elementType[0] + " elements...");
 
         printWriter.print(elementType[0] + " " + elementType[1] + "\n");
 
         for (int item : elementType) {
             while (item > 0) {
-                var randomNumber = new Random().nextInt(50000000); // Toggles max integer size of elements
+                var randomNumber = new Random().nextInt(1000000); // Toggles max integer size of elements
                 printWriter.println(randomNumber);
                 item--;
             }
@@ -290,6 +297,125 @@ public class ProjectClass {
             array.set(mergedArrayIndex, tempArray2[index2]);
             index2++;
             mergedArrayIndex++;
+        }
+    }
+
+    /**
+     * Inner class to abstract timer implementation
+     */
+    private static class Timer {
+        private long startTime;
+
+        public Timer() {
+        }
+
+        private void startTimer() {
+            startTime = System.currentTimeMillis();
+        }
+
+        private long getElapsedTime() {
+            return System.currentTimeMillis() - startTime;
+        }
+    }
+
+    /**
+     * Inner class that defines a simple binary tree
+     */
+    private static class BinaryTree {
+        private Node rootNode;
+        private String stringRep = "";
+
+        /**
+         * This defines a no-arg constructor for BinaryTree
+         */
+        public BinaryTree() {
+            rootNode = null;
+        }
+
+        /**
+         * Adds a new node to a BinaryTree
+         *
+         * @param key is the value of the new node to be added
+         */
+        private void addNode(int key) {
+            Node newNode = new Node(key);
+            Node currentNode = this.rootNode;
+            Node currentParent = null;
+            while (currentNode != null) {
+                currentParent = currentNode;
+                currentNode = (newNode.key < currentNode.key) ? currentNode.leftChild : currentNode.rightChild;
+            }
+            newNode.parent = currentParent;
+            if (currentParent == null) this.rootNode = newNode;
+            else if (newNode.key < currentParent.key) currentParent.leftChild = newNode;
+            else currentParent.rightChild = newNode;
+        }
+
+        /**
+         * Finds a node in the BinaryTree
+         *
+         * @param key is the key that is being searched for
+         * @return boolean value representing search success or failure
+         */
+        public boolean findNode(int key) {
+            return findNodeHelper(this.rootNode, key);
+        }
+
+        /**
+         * Helper method for findNode()
+         *
+         * @param root is the rootNode of the tree
+         * @param key  is the key that is being searched for
+         * @return boolean value representing search success or failure
+         */
+        private boolean findNodeHelper(Node root, int key) {
+            Node newNode = new Node(key);
+            if (root == null) return false;
+            if (root.key == newNode.key) return true;
+            else return root.key > newNode.key ?
+                    findNodeHelper(root.leftChild, key) : findNodeHelper(root.rightChild, key);
+        }
+
+        /**
+         * Inorder traversal to help print the contents of the tree
+         *
+         * @return is a string of integers in the tree
+         */
+        public String inOrderTraversal() {
+            return compileInorder(this.rootNode);
+        }
+
+        /**
+         * Helper method to traverse the elements of a tree
+         *
+         * @param root is the rootNode of the tree
+         * @return is a string of integers in the tree
+         */
+        private String compileInorder(Node root) {
+            if (root == null) return "";
+            stringRep += root.key + " ";
+            compileInorder(root.leftChild);
+            compileInorder(root.rightChild);
+            return stringRep;
+        }
+
+        /**
+         * This class defines a Node
+         */
+        private static class Node {
+            protected int key;
+            protected Node leftChild = null;
+            protected Node rightChild = null;
+            protected Node parent = null;
+
+            /**
+             * Defines a parameterized constructor for the Node class
+             *
+             * @param key is the value of a new Node
+             */
+            public Node(int key) {
+                this.key = key;
+            }
         }
     }
 }

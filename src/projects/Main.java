@@ -1,6 +1,5 @@
 package projects;
 
-import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -37,6 +36,7 @@ public class Main {
             var userInput = scanner.next();
             if (userInput.isEmpty()) {
                 System.out.println("Input file cannot be empty, please retry");
+                scanner.close();
                 return;
             } else {
                 var fileNames = userInput.split(",");
@@ -49,11 +49,13 @@ public class Main {
         } else if (response == 3) projectClass = new ProjectClass();
         else {
             System.out.println("Invalid response");
+            scanner.close();
             return;
         }
 
-        projectClass.initializeProgram();
+        projectClass.initializeProgram(false); // Toggles BinaryTree search & Linear/Binary Search algorithms
         projectClass.runSearchAlgorithms();
+
         scanner.close();
     }
 }
